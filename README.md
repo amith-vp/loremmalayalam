@@ -1,7 +1,7 @@
 # loremmalayalam
 Malayalam Lorem Ipsum Generator
 
-# Run
+# Installation
 
 1. 
  ```
