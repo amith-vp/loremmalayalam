@@ -1,11 +1,19 @@
 # loremmalayalam
 Malayalam Lorem Ipsum Generator
 
-# Run
+# Installation
 
+1. 
+ ```
+git clone https://github.com/amith-vp/loremmalayalam.git
+``` 
+
+
+2.  
 ```
 npm install
-
-node index.js
-
+ ```
+3.  
 ```
+node index.js
+ ```
