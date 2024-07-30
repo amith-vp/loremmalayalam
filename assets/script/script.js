@@ -512,24 +512,46 @@ const kilikiWords=[
 
 ]
 //wikipedia
-const getMalayalamWords = async (numWords) => {
-    if (numWords > 1000) {
-        return 'അനിയാ നിൽ , 1000-ഇൽ താഴെ';
-    }
-    let words = [];
-    while (words.length < numWords) {
-        const res = await fetch(
-            'https://ml.wikipedia.org/w/api.php?action=query&generator=random&grnnamespace=0&prop=extracts&exchars=100000&exsectionformat=wiki&format=json&origin=*'
-        );
-        const data = await res.json();
-        const page = Object.values(data.query.pages)[0];
-        const content = page.extract;
-        const paragraphs = content.match(/<p>.*?<\/p>/g) || [];
-        const text = paragraphs.map(p => p.replace(/<\/?[^>]+(>|$)/g, "")).join(' ');
-        words = words.concat(text.split(/\s+/));
-    }
-    return words.slice(0, numWords).join(' ');
-};
+function getMalayalamWords(numWords) {
+    return new Promise((resolve, reject) => {
+      if (numWords > 2000) {
+        resolve("അനിയാ നിൽ , 2000-ഇൽ താഴെ");
+        return;
+      }
+  
+      let words = [];
+  
+      function fetchWords() {
+        if (words.length >= numWords) {
+          resolve(words.slice(0, numWords).join(' '));
+          return;
+        }
+  
+        fetch('https://ml.wikipedia.org/w/api.php?action=query&generator=random&grnnamespace=0&prop=extracts&exchars=100000&exsectionformat=plain&format=json&origin=*')
+          .then(response => response.json())
+          .then(data => {
+            const page = Object.values(data.query.pages)[0];
+            const content = page.extract;
+  
+            const tempElement = document.createElement('div');
+            tempElement.innerHTML = content;
+  
+            const paragraphs = Array.from(tempElement.getElementsByTagName('p'))
+              .map(p => p.textContent);
+  
+            const text = paragraphs.join(' ');
+            words = words.concat(text.split(/\s+/));
+  
+            fetchWords();
+          })
+          .catch(error => {
+            reject(error);
+          });
+      }
+  
+      fetchWords();
+    });
+  }
 
 function toggleSpinner(button, show) {
     const spinner = button.querySelector('.spinner');
@@ -596,9 +618,9 @@ document.getElementById('copyButton').addEventListener('click', () => {
     textArea.select();
     document.execCommand('copy');
 
-    document.getElementById('copyButton').innerText = 'പകർത്തി!';
+    document.getElementById('copyButton').innerHTML = '<div class="flex items-center space-x-1.5"><svg class="w-3 h-3 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 12"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5.917 5.724 10.5 15 1.5"/></svg> <span class="text-white">പകർത്തി</span></div>';
     setTimeout(() => {
-        document.getElementById('copyButton').innerText = 'പകർത്തുക';
+        document.getElementById('copyButton').innerHTML = '<div class="flex items-center space-x-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" class="icon-md-heavy"><path fill="currentColor" fill-rule="evenodd" d="M7 5a3 3 0 0 1 3-3h9a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-2v2a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3h2zm2 2h5a3 3 0 0 1 3 3v5h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-9a1 1 0 0 0-1 1zM5 9a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1z" clip-rule="evenodd"></path></svg> <span class="text-white">പകർത്തുക</span></div>';
     }, 3000);
 
 });
